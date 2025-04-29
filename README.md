@@ -6,7 +6,7 @@ This is an implementation of [quantum tic-tac-toe](https://en.wikipedia.org/wiki
 
 Currently, the game requires two players to play. Singleplayer versus AI may come at a later date.
 
-# Playing
+## Playing
 
 Just run `quantum-tic-tac-toe.py` and start playing
 
