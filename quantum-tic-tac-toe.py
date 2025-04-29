@@ -256,4 +256,5 @@ def main() -> None:
 		quitting = input("Would you like to exit? (Y/n) ")
 		if quitting.startswith(("Y","y")):
 			quit = True
+
 main()
