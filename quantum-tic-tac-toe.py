@@ -22,8 +22,7 @@ def draw_board(quantum_board: list[list[int]], classical_board: list[int]) -> No
 			print_row = column
 			for j in range(3):
 				if(classical_board[j + offset * 3] > 0):
-					big_mark = big[row_part * 2 + (classical_board[j + offset * 3]) % 2]
-					big_mark = big_mark.replace("n", str(classical_board[j + offset * 3]))
+					big_mark = big[row_part * 2 + (classical_board[j + offset * 3]) % 2].replace("n", str(classical_board[j + offset * 3]))
 					print_row += big_mark
 				elif(len(quantum_board[j + offset * 3]) > 0):
 					if len(quantum_board[j + offset * 3]) <= row_part * 3:
@@ -108,8 +107,8 @@ def is_won(classical_board: list[int]) -> dict[str, float]:
 	for i in range(0,9,3):
 		if classical_board[i] == 0 or classical_board[i+1] == 0 or classical_board[i+2] == 0:
 			continue
-		if classical_board[i] % 2 == classical_board[i+1] % 2 and classical_board[i+1] % 2 == classical_board[i+2] % 2:
-			highest_spooky_mark = max(int(classical_board[i]),int(classical_board[i+1]),int(classical_board[i+2]))
+		if classical_board[i] % 2 == classical_board[i+1] % 2 == classical_board[i+2] % 2:
+			highest_spooky_mark = max(classical_board[i], classical_board[i+1], classical_board[i+2])
 			if highest_spooky_mark < winner_spooky_mark:
 				loser_spooky_mark = winner_spooky_mark
 				winner_spooky_mark = highest_spooky_mark
@@ -121,8 +120,8 @@ def is_won(classical_board: list[int]) -> dict[str, float]:
 	for i in range(3):
 		if classical_board[i] == 0 or classical_board[i+3] == 0 or classical_board[i+6] == 0:
 			continue
-		if classical_board[i] % 2 == classical_board[i+3] % 2 and classical_board[i+3] % 2 == classical_board[i+6] % 2:
-			highest_spooky_mark = max(int(classical_board[i]),int(classical_board[i+3]),int(classical_board[i+6]))
+		if classical_board[i] % 2 == classical_board[i+3] % 2 == classical_board[i+6] % 2:
+			highest_spooky_mark = max(classical_board[i], classical_board[i+3], classical_board[i+6])
 			if highest_spooky_mark < winner_spooky_mark:
 				loser_spooky_mark = winner_spooky_mark
 				winner_spooky_mark = highest_spooky_mark
@@ -133,8 +132,8 @@ def is_won(classical_board: list[int]) -> dict[str, float]:
 	# check diagonals
 	if classical_board[0] == 0 or classical_board[4] == 0 or classical_board[8] == 0:
 		pass
-	elif classical_board[0] % 2 == classical_board[4] % 2 and classical_board[4] % 2 == classical_board[8] % 2:
-		highest_spooky_mark = max(int(classical_board[0]),int(classical_board[4]),int(classical_board[8]))
+	elif classical_board[0] % 2 == classical_board[4] % 2 == classical_board[8] % 2:
+		highest_spooky_mark = max(classical_board[0], classical_board[4], classical_board[8])
 		if highest_spooky_mark < winner_spooky_mark:
 			loser_spooky_mark = winner_spooky_mark
 			winner_spooky_mark = highest_spooky_mark
@@ -144,8 +143,8 @@ def is_won(classical_board: list[int]) -> dict[str, float]:
 			loser_spooky_mark = highest_spooky_mark
 	if classical_board[2] == 0 or classical_board[4] == 0 or classical_board[6] == 0:
 		pass
-	elif classical_board[2] % 2 == classical_board[4] % 2 and classical_board[4] % 2 == classical_board[6] % 2:
-		highest_spooky_mark = max(int(classical_board[2]),int(classical_board[4]),int(classical_board[6]))
+	elif classical_board[2] % 2 == classical_board[4] % 2 == classical_board[6] % 2:
+		highest_spooky_mark = max(classical_board[2], classical_board[4], classical_board[6])
 		if highest_spooky_mark < winner_spooky_mark:
 			loser_spooky_mark = winner_spooky_mark
 			winner_spooky_mark = highest_spooky_mark
