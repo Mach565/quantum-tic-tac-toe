@@ -235,13 +235,24 @@ def game() -> dict[str,float]:
 	return score
 
 # start with two player, then add random AI
-# test the functions independently before actually making the game loop
 def main() -> None:
 	quit = False
 	score = {"P1": 0, "P2": 0}
 	while not quit:
+		while True:
+			player1_role = input("Player 1, would you like to play as X or O? ")
+			if player1_role == "x" or player1_role == "X":
+				player1_role = "X"
+				break
+			elif player1_role == "o" or player1_role == "O":
+				player1_role = "O"
+				break
+			else:
+				print("Invalid answer, please try again")
+		player2_role = "X" if player1_role == "O" else "O"
 		match_score = game()
-		# figure out if the value should go to p1 or p2
+		score["P1"] += match_score[player1_role]
+		score["P2"] += match_score[player2_role]
 		print(f"Total Score:\nPlayer 1: {score["P1"]}\nPlayer 2: {score["P2"]}")
 		quitting = input("Would you like to exit? (Y/n) ")
 		if quitting.startswith(("Y","y")):
