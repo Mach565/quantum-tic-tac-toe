@@ -170,47 +170,65 @@ def is_won(classical_board: list[int]) -> dict[str, float]:
 		x_points = 0	
 	score = {"O": o_points, "X": x_points}
 	return score
-	
+
+def move_board(valid_moves: list[bool]) -> None:
+	column = "│"
+	row = "─┼─┼─"
+	offset = 0
+	height = 3 + 2
+	for i in range(height):
+		print_row = ""
+		if i == 1 or i == 3:
+			print_row = row	
+			offset += 1
+		else:
+			for j in range(3):
+				if valid_moves[(i - offset)*3 + j]:
+					print_row += str((i - offset)*3 + j) + column
+				else:
+					print_row += " " + column
+			print_row = print_row[:-1] # remove the trailing column
+		print(print_row)
+
 def game() -> dict[str,float]:
 	classical_board = [0,0,0,0,0,0,0,0,0]
 	quantum_board = [[],[],[],[],[],[],[],[],[]]
+	valid_moves = [True,True,True,True,True,True,True,True,True]
 	score = {}
 	position1 = 0
 	position2 = 0
-	for turn in range(1,10):
+	for turn in range(1,11): # extra round for final cycle check
 		player = "O" if turn % 2 == 0 else "X"
 		if turn > 1 and has_cycle(quantum_board, [position1, position2]):
 			print("Cycle detected, resolve superpositions")
 			print(f"{player}, choose either {position1} or {position2} to be measured")
-			print("The result of the measurement will be whatever was played last round")	
+			print("The result of the measurement in that square will be whatever was played last round")	
 			while True:
 				try:
 					position = int(input(player + " pick location: "))
-					print(position)
 					if position == position1 or position == position2:
 						other_pos = position2 if position == position1 else position1
-						print(other_pos)
 						collapse(quantum_board, classical_board, position, (turn - 1) * 10 + other_pos)
 						break
 					print("Invalid location, try again")
 				except ValueError:
 					print("Not a number, try again")			
-		draw_board(quantum_board, classical_board)
+			draw_board(quantum_board, classical_board)
 		score = is_won(classical_board)
-		if score["O"] > 0 or score["X"] > 0:
-			# someone has won
+		if score["O"] > 0 or score["X"] > 0 or turn == 10:
+			# someone has won or the board is full
+			# not the cleanest way to end the game, especially in the latter case
 			break
-		valid_moves = []
+			
 		for i in range(9):
-			# make a list of the valid moves
-			if classical_board[i] == 0:
-				valid_moves.append(i)
+			if classical_board[i] != 0:
+				valid_moves[i] = False
 		print("Valid Moves:")
-		print(*valid_moves, sep=", ")
+		move_board(valid_moves)
 		while True:
 			try:
 				position1 = int(input(player + " first location: "))
-				if valid_moves.count(i) == 1:
+				if valid_moves[position1]:
 					break
 				print("Invalid location, try again")
 			except ValueError:
@@ -218,13 +236,14 @@ def game() -> dict[str,float]:
 		while True:
 			try:
 				position2 = int(input(player + " second location: "))
-				if valid_moves.count(i) == 1 and position2 != position1:
+				if valid_moves[position2] and position2 != position1:
 					break
 				print("Invalid location, try again")
 			except ValueError:
 				print("Not a number, try again")
 		quantum_board[position1].append(turn * 10 + position2)
 		quantum_board[position2].append(turn * 10 + position1)	
+		draw_board(quantum_board, classical_board)
 	if score["O"] > score ["X"]:
 		print("O Victory!")
 	elif score["X"] > score ["O"]:
@@ -234,7 +253,7 @@ def game() -> dict[str,float]:
 	return score
 
 # start with two player, then add random AI
-def main() -> None:
+if __name__ == "__main__":
 	quit = False
 	score = {"P1": 0, "P2": 0}
 	while not quit:
@@ -247,7 +266,7 @@ def main() -> None:
 				player1_role = "O"
 				break
 			else:
-				print("Invalid answer, please try again")
+				print("Invalid answer. Please type either 'X' or 'O'")
 		player2_role = "X" if player1_role == "O" else "O"
 		match_score = game()
 		score["P1"] += match_score[player1_role]
@@ -257,4 +276,3 @@ def main() -> None:
 		if quitting.startswith(("Y","y")):
 			quit = True
 
-main()
