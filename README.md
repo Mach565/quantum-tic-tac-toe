@@ -4,7 +4,7 @@
 
 This is an implementation of [quantum tic-tac-toe](https://en.wikipedia.org/wiki/Quantum_tic-tac-toe), written in Python for the terminal. The version of Python used to create this was Python 3.12, later or eariler versions may work, but aren't guaranteed to do so.
 
-Currently, the game requires two players to play. Singleplayer versus AI may come at a later date.
+Currently, the game features both a 2 player mode and a 1 player vs. an AI that plays random moves.
 
 ## Playing
 

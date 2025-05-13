@@ -1,3 +1,5 @@
+import random
+
 # Will work with Python 3.12
 # May work on other Python versions too, no guarantees though
 
@@ -190,59 +192,87 @@ def move_board(valid_moves: list[bool]) -> None:
 			print_row = print_row[:-1] # remove the trailing column
 		print(print_row)
 
-def game() -> dict[str,float]:
+def player_move(valid_moves: list[bool], player: str) -> list[int]:
+	print("Valid Moves:")
+	move_board(valid_moves)
+	while True:
+		try:
+			position1 = int(input(player + " first location: "))
+			if valid_moves[position1]:
+				break
+			print("Invalid location, try again")
+		except ValueError:
+			print("Not a number, try again")
+	while True:
+		try:
+			position2 = int(input(player + " second location: "))
+			if valid_moves[position2] and position2 != position1:
+				break
+			print("Invalid location, try again")
+		except ValueError:
+			print("Not a number, try again")
+	return [position1, position2]
+
+def player_collapse(moves: list[int], player: str) -> int:
+	print(f"{player}, choose either {moves[0]} or {moves[1]} to be measured")
+	print("The result of the measurement in that square will be whatever was played last round")	
+	while True:
+		try:
+			position = int(input(player + " pick location: "))
+			if position == moves[0] or position == moves[1]:
+				return position
+			print("Invalid location, try again")
+		except ValueError:			
+			print("Not a number, try again")
+			
+
+def ai_collapse(moves: list[int]) -> int:
+	position = random.choice(moves)
+	print(f"The AI has chosen to collapse {position}")
+	return position
+	
+def ai_move(valid_moves: list[bool]) -> list[int]:
+	moves = []
+	for i in range(len(valid_moves)):
+		if valid_moves[i]:
+			moves.append(i)
+	choices = random.sample(moves, 2)
+	print(f"The AI has chosen to play {choices[0]} and {choices[1]}")
+	return choices
+			
+
+def ai_game(ai_role: str) -> dict[str,float]:
 	classical_board = [0,0,0,0,0,0,0,0,0]
 	quantum_board = [[],[],[],[],[],[],[],[],[]]
 	valid_moves = [True,True,True,True,True,True,True,True,True]
 	score = {}
-	position1 = 0
-	position2 = 0
+	moves = [0,0]
+	position = 0
 	for turn in range(1,11): # extra round for final cycle check
 		player = "O" if turn % 2 == 0 else "X"
-		if turn > 1 and has_cycle(quantum_board, [position1, position2]):
+		if turn > 1 and has_cycle(quantum_board, moves):
 			print("Cycle detected, resolve superpositions")
-			print(f"{player}, choose either {position1} or {position2} to be measured")
-			print("The result of the measurement in that square will be whatever was played last round")	
-			while True:
-				try:
-					position = int(input(player + " pick location: "))
-					if position == position1 or position == position2:
-						other_pos = position2 if position == position1 else position1
-						collapse(quantum_board, classical_board, position, (turn - 1) * 10 + other_pos)
-						break
-					print("Invalid location, try again")
-				except ValueError:
-					print("Not a number, try again")			
+			if player == ai_role:
+				position = ai_collapse(moves)
+			else:		
+				position = player_collapse(moves, player)
+			other_pos = moves[1] if position == moves[0] else moves[0]
+			collapse(quantum_board, classical_board, position, (turn - 1) * 10 + other_pos)
+			for i in range(9):
+					if classical_board[i] != 0:
+						valid_moves[i] = False
 			draw_board(quantum_board, classical_board)
 		score = is_won(classical_board)
 		if score["O"] > 0 or score["X"] > 0 or turn == 10:
 			# someone has won or the board is full
 			# not the cleanest way to end the game, especially in the latter case
-			break
-			
-		for i in range(9):
-			if classical_board[i] != 0:
-				valid_moves[i] = False
-		print("Valid Moves:")
-		move_board(valid_moves)
-		while True:
-			try:
-				position1 = int(input(player + " first location: "))
-				if valid_moves[position1]:
-					break
-				print("Invalid location, try again")
-			except ValueError:
-				print("Not a number, try again")
-		while True:
-			try:
-				position2 = int(input(player + " second location: "))
-				if valid_moves[position2] and position2 != position1:
-					break
-				print("Invalid location, try again")
-			except ValueError:
-				print("Not a number, try again")
-		quantum_board[position1].append(turn * 10 + position2)
-		quantum_board[position2].append(turn * 10 + position1)	
+			break		
+		if player == ai_role:
+			moves = ai_move(valid_moves)
+		else:
+			moves = player_move(valid_moves, player)
+		quantum_board[moves[0]].append(turn * 10 + moves[1])
+		quantum_board[moves[1]].append(turn * 10 + moves[0])	
 		draw_board(quantum_board, classical_board)
 	if score["O"] > score ["X"]:
 		print("O Victory!")
@@ -252,10 +282,65 @@ def game() -> dict[str,float]:
 		print("Draw")
 	return score
 
-# start with two player, then add random AI
-if __name__ == "__main__":
+def game() -> dict[str,float]:
+	classical_board = [0,0,0,0,0,0,0,0,0]
+	quantum_board = [[],[],[],[],[],[],[],[],[]]
+	valid_moves = [True,True,True,True,True,True,True,True,True]
+	score = {}
+	moves = [0,0]
+	for turn in range(1,11): # extra round for final cycle check
+		player = "O" if turn % 2 == 0 else "X"
+		if turn > 1 and has_cycle(quantum_board, moves):
+			print("Cycle detected, resolve superpositions")
+			position = player_collapse(moves, player)
+			other_pos = moves[1] if position == moves[0] else moves[0]
+			collapse(quantum_board, classical_board, position, (turn - 1) * 10 + other_pos)
+			for i in range(9):
+					if classical_board[i] != 0:
+						valid_moves[i] = False
+			draw_board(quantum_board, classical_board)
+		score = is_won(classical_board)
+		if score["O"] > 0 or score["X"] > 0 or turn == 10:
+			# someone has won or the board is full
+			# not the cleanest way to end the game, especially in the latter case
+			break
+			
+		moves = player_move(valid_moves, player)
+		quantum_board[moves[0]].append(turn * 10 + moves[1])
+		quantum_board[moves[1]].append(turn * 10 + moves[0])	
+		draw_board(quantum_board, classical_board)
+	if score["O"] > score ["X"]:
+		print("O Victory!")
+	elif score["X"] > score ["O"]:
+		print("X Victory!")
+	else:
+		print("Draw")
+	return score
+
+def one_player(score: dict[str, float]):
 	quit = False
-	score = {"P1": 0, "P2": 0}
+	while not quit:
+		while True:
+			player1_role = input("Player, would you like to play as X or O? ")
+			if player1_role == "x" or player1_role == "X":
+				player1_role = "X"
+				break
+			elif player1_role == "o" or player1_role == "O":
+				player1_role = "O"
+				break
+			else:
+				print("Invalid answer. Please type either 'X' or 'O'")
+		ai_role = "X" if player1_role == "O" else "O"
+		match_score = ai_game(ai_role)
+		score["P1"] += match_score[player1_role]
+		score["P2"] += match_score[ai_role]
+		print(f"Total Score:\nHuman: {score["P1"]}\nAI: {score["P2"]}")
+		quitting = input("Would you like to exit? (Y/n) ")
+		if quitting.startswith(("Y","y")):
+			quit = True
+
+def two_player(score: dict[str, float]):
+	quit = False
 	while not quit:
 		while True:
 			player1_role = input("Player 1, would you like to play as X or O? ")
@@ -276,3 +361,17 @@ if __name__ == "__main__":
 		if quitting.startswith(("Y","y")):
 			quit = True
 
+# start with two player, then add random AI
+if __name__ == "__main__":
+	quit = False
+	score = {"P1": 0.0, "P2": 0.0}
+	print("Welcome to Quantum Tic-Tac-Toe")
+	while True:
+		mode = input("Would you like to play 1 player or 2 players? ")
+		if mode == "1":
+			one_player(score)
+		elif mode == "2":
+			two_player(score)
+		else:
+			print("Invaild input, please type '1' or '2'")
+		break
